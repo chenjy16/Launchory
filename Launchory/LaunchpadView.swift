@@ -32,40 +32,6 @@ private class PageFlipManager: ObservableObject {
     }
 }
 
-private final class FPSMonitor {
-    private var timer: Timer?
-    private var lastTimestamp: TimeInterval = 0
-    private let callback: (Double, Double) -> Void
-
-    init?(callback: @escaping (Double, Double) -> Void) {
-        self.callback = callback
-        self.timer = Timer.scheduledTimer(withTimeInterval: 0.016, repeats: true) { [weak self] t in
-            self?.step(t)
-        }
-    }
-
-    private func step(_ timer: Timer) {
-        let current = Date().timeIntervalSinceReferenceDate
-        guard lastTimestamp != 0 else {
-            lastTimestamp = current
-            return
-        }
-        let delta = current - lastTimestamp
-        lastTimestamp = current
-        guard delta > 0 else { return }
-        callback(1.0 / delta, delta)
-    }
-
-    func invalidate() {
-        timer?.invalidate()
-        timer = nil
-    }
-
-    deinit {
-        invalidate()
-    }
-}
-
 private extension View {
     @ViewBuilder
     func launchpadBackgroundStyle(_ style: AppStore.BackgroundStyle,
@@ -132,9 +98,6 @@ struct LaunchpadView: View {
     @State private var blankDragStartPoint: CGPoint? = nil
     @State private var blankDragShouldIgnore: Bool = false
     @State private var blankDragConsumed: Bool = false
-    @State private var fpsMonitor: FPSMonitor?
-    @State private var fpsValue: Double = 0
-    @State private var frameTimeMilliseconds: Double = 0
     @State private var isWindowVisible: Bool = true
 
     private var isFolderOpen: Bool { appStore.openFolder != nil }
@@ -722,19 +685,6 @@ struct LaunchpadView: View {
                 scrollState.followLastOffset = 0
             }
         }
-        .overlay(alignment: .bottomTrailing) {
-            if appStore.showFPSOverlay {
-                Text(String(format: "%.0f FPS  %.1f ms", fpsValue, frameTimeMilliseconds))
-                    .font(.caption.monospacedDigit()).bold()
-                    .padding(.horizontal, 12)
-                    .padding(.vertical, 8)
-                    .background(.ultraThinMaterial)
-                    .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
-                    .padding(18)
-                    .transition(.opacity)
-            }
-        }
-        .animation(.easeInOut(duration: 0.2), value: appStore.showFPSOverlay)
          .onChange(of: appStore.items) {
              guard draggingItem == nil else { return }
              clampSelection()
@@ -780,9 +730,6 @@ struct LaunchpadView: View {
                
                // 检查缓存状态
                checkCacheStatus()
-              if appStore.showFPSOverlay {
-                  startFPSMonitoring()
-              }
            }
          .onDisappear {
              [keyMonitor, handoffEventMonitor].forEach { monitor in
@@ -797,16 +744,7 @@ struct LaunchpadView: View {
             globalMouseUpMonitor = nil
             windowObserver = nil
             windowHiddenObserver = nil
-            stopFPSMonitoring()
          }
-        .onChange(of: appStore.showFPSOverlay) { _, enabled in
-            if enabled {
-                startFPSMonitoring()
-            } else {
-                stopFPSMonitoring()
-                fpsValue = 0
-            }
-        }
         .onChange(of: appStore.voiceFeedbackEnabled) { _, enabled in
             if enabled {
                 if let idx = selectedIndex, filteredItems.indices.contains(idx) {
@@ -1029,30 +967,6 @@ struct LaunchpadView: View {
         navigateToPage(appStore.currentPage - 1)
     }
     
-}
-
-// MARK: - FPS Monitoring
-extension LaunchpadView {
-    private func startFPSMonitoring() {
-        stopFPSMonitoring()
-        if let monitor = FPSMonitor(callback: { fps, frameDelta in
-            let clamped = max(0, min(fps, 240))
-            DispatchQueue.main.async {
-                let smoothed = fpsValue * 0.8 + clamped * 0.2
-                fpsValue = smoothed
-                frameTimeMilliseconds = frameDelta * 1000
-            }
-        }) {
-            fpsMonitor = monitor
-        }
-    }
-
-    private func stopFPSMonitoring() {
-        fpsMonitor?.invalidate()
-        fpsMonitor = nil
-        fpsValue = 0
-        frameTimeMilliseconds = 0
-    }
 }
 
 // MARK: - Blank area drag to flip pages

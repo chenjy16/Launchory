@@ -728,13 +728,6 @@ final class AppStore: ObservableObject {
         }
     }
 
-    @Published var showFPSOverlay: Bool = {
-        if UserDefaults.standard.object(forKey: "showFPSOverlay") == nil { return false }
-        return UserDefaults.standard.bool(forKey: "showFPSOverlay")
-    }() {
-        didSet { UserDefaults.standard.set(showFPSOverlay, forKey: "showFPSOverlay") }
-    }
-
     @Published var performanceMode: PerformanceMode = PerformanceMode.current {
         didSet {
             guard oldValue != performanceMode else { return }
@@ -1412,9 +1405,6 @@ final class AppStore: ObservableObject {
         }
         if UserDefaults.standard.object(forKey: "animationDuration") == nil {
             UserDefaults.standard.set(0.3, forKey: "animationDuration")
-        }
-        if UserDefaults.standard.object(forKey: "showFPSOverlay") == nil {
-            UserDefaults.standard.set(false, forKey: "showFPSOverlay")
         }
         if defaults.object(forKey: "pageIndicatorOffset") == nil {
             defaults.set(27.0, forKey: "pageIndicatorOffset")

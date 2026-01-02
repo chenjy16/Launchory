@@ -585,12 +585,6 @@ struct SettingsView: View {
             .font(.caption.monospacedDigit())
             .foregroundStyle(.secondary)
 
-            Toggle(appStore.localized(.showFPSOverlay), isOn: $appStore.showFPSOverlay)
-                .toggleStyle(.switch)
-            Text(appStore.localized(.showFPSOverlayDisclaimer))
-                .font(.caption)
-                .foregroundStyle(.secondary)
-
             Divider()
 
             // 已移除旧版导入功能以符合 App Store 审核指南

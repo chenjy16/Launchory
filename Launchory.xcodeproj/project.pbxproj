@@ -73,7 +73,6 @@
 				0D1B0B3C2E4CDE460083EEF9 /* Sources */,
 				0D1B0B3D2E4CDE460083EEF9 /* Frameworks */,
 				0D1B0B3E2E4CDE460083EEF9 /* Resources */,
-				E1C2D3A42F56B78900ABCDEF /* Run Script (Updater) */,
 			);
 			buildRules = (
 			);
@@ -146,38 +145,6 @@
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXResourcesBuildPhase section */
-
-/* Begin PBXShellScriptBuildPhase section */
-		E1C2D3A42F56B78900ABCDEF /* Run Script (Updater) */ = {
-			isa = PBXShellScriptBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			inputFileListPaths = (
-			);
-			inputPaths = (
-				"$(SRCROOT)/UpdaterScripts/SwiftUpdater/Package.swift",
-				"$(SRCROOT)/UpdaterScripts/SwiftUpdater/Sources/SwiftUpdater/Arguments.swift",
-				"$(SRCROOT)/UpdaterScripts/SwiftUpdater/Sources/SwiftUpdater/Config.swift",
-				"$(SRCROOT)/UpdaterScripts/SwiftUpdater/Sources/SwiftUpdater/Downloader.swift",
-				"$(SRCROOT)/UpdaterScripts/SwiftUpdater/Sources/SwiftUpdater/Errors.swift",
-				"$(SRCROOT)/UpdaterScripts/SwiftUpdater/Sources/SwiftUpdater/GitHubAPI.swift",
-				"$(SRCROOT)/UpdaterScripts/SwiftUpdater/Sources/SwiftUpdater/Installer.swift",
-				"$(SRCROOT)/UpdaterScripts/SwiftUpdater/Sources/SwiftUpdater/Localization.swift",
-				"$(SRCROOT)/UpdaterScripts/SwiftUpdater/Sources/SwiftUpdater/NCursesUI.swift",
-				"$(SRCROOT)/UpdaterScripts/SwiftUpdater/Sources/SwiftUpdater/SwiftUpdater.swift",
-			);
-			name = "Run Script (Updater)";
-			outputFileListPaths = (
-			);
-			outputPaths = (
-				"$(TARGET_BUILD_DIR)/$(UNLOCALIZED_RESOURCES_FOLDER_PATH)/Updater/SwiftUpdater",
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/bash;
-			shellScript = "set -euo pipefail\n\nif [[ \"${ENABLE_PREVIEWS:-NO}\" == \"YES\" ]]; then\n  echo 'SwiftUI Preview: skip updater build'\n  exit 0\nfi\n\nUPDATER_DIR=\"${SRCROOT}/UpdaterScripts/SwiftUpdater\"\nDEST_DIR=\"${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/Updater\"\nSOURCE_BIN=\"${UPDATER_DIR}/.build/apple/Products/Release/SwiftUpdater\"\nLEGACY_BIN=\"${UPDATER_DIR}/.build/release/SwiftUpdater\"\n\nmkdir -p \"${DEST_DIR}\"\n\nfunction sign_binary {\n  /usr/bin/codesign --force --sign - --preserve-metadata=entitlements,requirements \"$1\"\n}\n\nif [[ -f \"${SOURCE_BIN}\" ]]; then\n  echo \"Using SwiftUpdater at ${SOURCE_BIN}\"\n  cp \"${SOURCE_BIN}\" \"${DEST_DIR}/SwiftUpdater\"\n  chmod +x \"${DEST_DIR}/SwiftUpdater\"\n  sign_binary \"${DEST_DIR}/SwiftUpdater\"\n  exit 0\nfi\n\nif [[ -f \"${LEGACY_BIN}\" ]]; then\n  echo \"Using SwiftUpdater at ${LEGACY_BIN}\"\n  cp \"${LEGACY_BIN}\" \"${DEST_DIR}/SwiftUpdater\"\n  chmod +x \"${DEST_DIR}/SwiftUpdater\"\n  sign_binary \"${DEST_DIR}/SwiftUpdater\"\n  exit 0\nfi\n\n>&2 echo \"error: SwiftUpdater binary not found. Run 'swift build --configuration release --arch arm64 --arch x86_64 --product SwiftUpdater' in UpdaterScripts/SwiftUpdater\"\nexit 1\n";
-		};
-/* End PBXShellScriptBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
 		0D1B0B3C2E4CDE460083EEF9 /* Sources */ = {
@@ -345,7 +312,7 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CLANG_ENABLE_MODULES = YES;
-				CODE_SIGN_ENTITLEMENTS = "$(SRCROOT)/Launchory/Launchory.entitlements";
+				CODE_SIGN_ENTITLEMENTS = "$(SRCROOT)/Launchory.entitlements";
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
 				CURRENT_PROJECT_VERSION = 1;
@@ -355,7 +322,7 @@
 				ENABLE_HARDENED_RUNTIME = NO;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = NO;
-				INFOPLIST_FILE = "$(SRCROOT)/Launchory/Info.plist";
+				INFOPLIST_FILE = "$(SRCROOT)/Info.plist";
 				INFOPLIST_KEY_CFBundleAllowMixedLocalizations = YES;
 				INFOPLIST_KEY_CFBundleDisplayName = Launchory;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.productivity";
@@ -383,7 +350,7 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CLANG_ENABLE_MODULES = YES;
-				CODE_SIGN_ENTITLEMENTS = "$(SRCROOT)/Launchory/Launchory.entitlements";
+				CODE_SIGN_ENTITLEMENTS = "$(SRCROOT)/Launchory.entitlements";
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
 				CURRENT_PROJECT_VERSION = 1;
@@ -393,7 +360,7 @@
 				ENABLE_HARDENED_RUNTIME = NO;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = NO;
-				INFOPLIST_FILE = "$(SRCROOT)/Launchory/Info.plist";
+				INFOPLIST_FILE = "$(SRCROOT)/Info.plist";
 				INFOPLIST_KEY_CFBundleAllowMixedLocalizations = YES;
 				INFOPLIST_KEY_CFBundleDisplayName = Launchory;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.productivity";

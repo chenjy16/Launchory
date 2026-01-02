@@ -59,18 +59,7 @@ enum AppearancePreference: String, CaseIterable, Identifiable {
     }
 }
 
-
-private struct GitHubRelease: Decodable {
-    let tagName: String
-    let htmlUrl: URL
-    let body: String?
-
-    enum CodingKeys: String, CodingKey {
-        case tagName = "tag_name"
-        case htmlUrl = "html_url"
-        case body
-    }
-}
+// 已移除 GitHubRelease - 自定义更新器已被移除以符合 App Store 审核指南 2.1
 
 private struct SemanticVersion: Comparable, Equatable {
     private let components: [Int]
@@ -97,19 +86,7 @@ private struct SemanticVersion: Comparable, Equatable {
 }
 
 final class AppStore: ObservableObject {
-    enum UpdateState: Equatable {
-        case idle
-        case checking
-        case upToDate(latest: String)
-        case updateAvailable(UpdateRelease)
-        case failed(String)
-    }
-
-    struct UpdateRelease: Equatable {
-        let version: String
-        let url: URL
-        let notes: String?
-    }
+    // UpdateState 和 UpdateRelease 已移除 - 自定义更新器功能已移除以符合 App Store 审核指南
 
     enum BackgroundStyle: String, CaseIterable, Identifiable {
         case blur
@@ -239,27 +216,12 @@ final class AppStore: ObservableObject {
     static let defaultFolderDropZoneScale: Double = 1.6
     static let pageIndicatorTopPaddingRange: ClosedRange<Double> = 0...60
     static let defaultPageIndicatorTopPadding: Double = 12
-    private static let lastUpdateCheckKey = "lastUpdateCheckTimestamp"
-    private static let automaticUpdateInterval: TimeInterval = 60 * 60 * 24
+    // lastUpdateCheckKey 和 automaticUpdateInterval 已移除 - 自定义更新器功能已移除
     private static let defaultLaunchpadOpenSound = "Submarine"
     private static let defaultLaunchpadCloseSound = "Glass"
     private static let defaultNavigationSound = "Tink"
 
-    private var lastUpdateCheck: Date? {
-        get {
-            if let timestamp = UserDefaults.standard.object(forKey: Self.lastUpdateCheckKey) as? TimeInterval {
-                return Date(timeIntervalSince1970: timestamp)
-            }
-            return nil
-        }
-        set {
-            if let date = newValue {
-                UserDefaults.standard.set(date.timeIntervalSince1970, forKey: Self.lastUpdateCheckKey)
-            } else {
-                UserDefaults.standard.removeObject(forKey: Self.lastUpdateCheckKey)
-            }
-        }
-    }
+    // lastUpdateCheck 已移除 - 自定义更新器功能已移除
 
     private static func normalizedSoundName(_ raw: String?, defaultValue: String) -> String {
         guard let raw else { return defaultValue }
@@ -267,11 +229,7 @@ final class AppStore: ObservableObject {
         return SoundManager.isValidSystemSoundName(raw) ? raw : defaultValue
     }
 
-    private lazy var notificationDelegate = UpdateNotificationDelegate(
-        downloadButtonTitle: localized(.downloadUpdate),
-        openHandler: { [weak self] url in
-        self?.openReleaseURL(url)
-    })
+    // notificationDelegate 已移除 - 自定义更新器功能已移除
 
     struct HotKeyConfiguration: Equatable {
         let keyCode: UInt16
@@ -748,23 +706,7 @@ final class AppStore: ObservableObject {
         }
     }
 
-    // 更新检查相关属性
-    @Published var updateState: UpdateState = .idle
-
-    @Published var autoCheckForUpdates: Bool = {
-        if UserDefaults.standard.object(forKey: "autoCheckForUpdates") == nil { return true }
-        return UserDefaults.standard.bool(forKey: "autoCheckForUpdates")
-    }() {
-        didSet {
-            UserDefaults.standard.set(autoCheckForUpdates, forKey: "autoCheckForUpdates")
-            if autoCheckForUpdates {
-                scheduleAutomaticUpdateCheck()
-            } else {
-                autoCheckTimer?.cancel()
-                autoCheckTimer = nil
-            }
-        }
-    }
+    // updateState 已移除 - 自定义更新器功能已移除以符合 App Store 审核指南
 
     @Published var animationDuration: Double = {
         let stored = UserDefaults.standard.double(forKey: "animationDuration")
@@ -1511,7 +1453,7 @@ final class AppStore: ObservableObject {
 
         searchQuery = searchText
 
-        scheduleAutomaticUpdateCheck()
+        // scheduleAutomaticUpdateCheck() 已移除 - App Store 版本使用内置更新机制
 
         self.rememberLastPage = shouldRememberPage
         if shouldRememberPage, let savedPageIndex {
@@ -4138,59 +4080,10 @@ final class AppStore: ObservableObject {
         }
     }
 
-    /// 从原生 macOS Launchpad 导入布局
-    func importFromNativeLaunchpad() async -> (success: Bool, message: String) {
-#if !APP_STORE
-        guard let modelContext = self.modelContext else {
-            return (false, "数据存储未初始化")
-        }
-
-        do {
-            let importer = NativeLaunchpadImporter(modelContext: modelContext)
-            let result = try importer.importFromNativeLaunchpad()
-
-            // Fix Sendable warnings: Use MainActor.run instead of DispatchQueue.main.async inside async function
-            await MainActor.run { [weak self] in
-                self?.performInitialScanIfNeeded()
-                self?.loadAllOrder()
-                self?.triggerGridRefresh()
-            }
-
-            return (true, result.summary)
-        } catch {
-            return (false, "导入失败: \(error.localizedDescription)")
-        }
-#else
-        return (false, "Not available in App Store version")
-#endif
-    }
-
-    /// 从旧版归档（.lmy/.zip 或直接 db）导入
-    func importFromLegacyLaunchpadArchive(url: URL) async -> (success: Bool, message: String) {
-#if !APP_STORE
-        guard let modelContext = self.modelContext else {
-            return (false, "数据存储未初始化")
-        }
-
-        do {
-            let importer = NativeLaunchpadImporter(modelContext: modelContext)
-            let result = try importer.importFromLegacyArchive(at: url)
-
-            // Fix Sendable warnings by capturing only necessary data or using MainActor.run
-            await MainActor.run { [weak self] in
-                self?.performInitialScanIfNeeded()
-                self?.loadAllOrder()
-                self?.triggerGridRefresh()
-            }
-
-            return (true, result.summary)
-        } catch {
-            return (false, "导入失败: \(error.localizedDescription)")
-        }
-#else
-        return (false, "Not available in App Store version")
-#endif
-    }
+    // MARK: - 已移除的导入功能（App Store 合规）
+    // 以下功能已被移除以符合 App Store 审核指南：
+    // - importFromNativeLaunchpad(): 访问私有系统数据库违反指南 2.5.2
+    // - importFromLegacyLaunchpadArchive(): 读取外部数据库文件
 
     /// 处理导入的数据并重建应用布局
     private func processImportedData(_ importData: Any) -> Bool {
@@ -4401,310 +4294,16 @@ final class AppStore: ObservableObject {
         }
     }
 
-    // MARK: - 更新检查功能
-
-    private func scheduleAutomaticUpdateCheck() {
-        autoCheckTimer?.cancel()
-        autoCheckTimer = nil
-        autoCheckWorkItem?.cancel()
-        autoCheckWorkItem = nil
-
-        guard autoCheckForUpdates, AppStoreEnvironment.current.isAppStore == false else { return }
-
-        let work = DispatchWorkItem { [weak self] in
-            self?.performAutomaticUpdateCheckIfNeeded()
-        }
-        autoCheckWorkItem = work
-        DispatchQueue.main.asyncAfter(deadline: .now() + 10, execute: work)
-
-        let timer = DispatchSource.makeTimerSource(queue: DispatchQueue.main)
-        timer.schedule(deadline: .now() + Self.automaticUpdateInterval,
-                       repeating: Self.automaticUpdateInterval)
-        timer.setEventHandler { [weak self] in
-            self?.performAutomaticUpdateCheckIfNeeded()
-        }
-        timer.activate()
-        autoCheckTimer = timer
-    }
-
-    private func performAutomaticUpdateCheckIfNeeded() {
-        guard autoCheckForUpdates else { return }
-        let now = Date()
-        if let last = lastUpdateCheck, now.timeIntervalSince(last) < Self.automaticUpdateInterval {
-            return
-        }
-        checkForUpdates()
-    }
-
-    func checkForUpdates() {
-        guard updateState != .checking else { return }
-
-        guard AppStoreEnvironment.current.isAppStore == false else {
-            updateState = .idle
-            return
-        }
-
-        lastUpdateCheck = Date()
-        updateState = .checking
-
-        Task { [weak self] in
-            guard let self else { return }
-            do {
-                let currentVersion = getCurrentVersion()
-                let latestRelease = try await fetchLatestRelease()
-
-                await MainActor.run { [weak self] in
-                    guard let self else { return }
-                    if let current = SemanticVersion(currentVersion),
-                       let latest = SemanticVersion(latestRelease.tagName) {
-                        if latest > current {
-                            let release = UpdateRelease(
-                                version: latestRelease.tagName,
-                                url: latestRelease.htmlUrl,
-                                notes: latestRelease.body
-                            )
-                            updateState = .updateAvailable(release)
-                            presentUpdateAlert(for: release)
-                        } else {
-                            updateState = .upToDate(latest: latestRelease.tagName)
-                        }
-                    } else {
-                        updateState = .failed(localized(.versionParseError))
-                        presentUpdateFailureAlert(localized(.versionParseError))
-                    }
-                }
-            } catch {
-                await MainActor.run { [weak self] in
-                    guard let self else { return }
-                    let message = error.localizedDescription
-                    updateState = .failed(message)
-                    presentUpdateFailureAlert(message)
-                }
-            }
-        }
-    }
+    // MARK: - 已移除的更新检查功能（App Store 合规）
+    // 自定义更新器已被移除以符合 App Store 审核指南 2.1
+    // App Store 版本使用内置的更新机制
 
     private func getCurrentVersion() -> String {
         return Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "0.0.0"
     }
 
-    private func fetchLatestRelease() async throws -> GitHubRelease {
-        let url = URL(string: "https://api.github.com/repos/RoversX/LaunchNext/releases/latest")!
-        var request = URLRequest(url: url)
-        request.cachePolicy = .reloadIgnoringLocalCacheData
-        request.setValue("application/vnd.github+json", forHTTPHeaderField: "Accept")
-        let (data, response) = try await URLSession.shared.data(for: request)
-
-        guard let httpResponse = response as? HTTPURLResponse,
-              httpResponse.statusCode == 200 else {
-            throw URLError(.badServerResponse)
-        }
-
-        return try JSONDecoder().decode(GitHubRelease.self, from: data)
-    }
-
-    @MainActor
-    private func presentUpdateAlert(for release: UpdateRelease) {
-        let content = UNMutableNotificationContent()
-        content.title = localized(.updateAvailable)
-        content.body = "\(localized(.newVersion)) \(release.version)"
-        content.sound = .default
-        content.userInfo = ["releaseURL": release.url.absoluteString]
-        content.categoryIdentifier = "UPDATE_CATEGORY"
-
-        let request = UNNotificationRequest(identifier: "UpdateAvailable", content: content, trigger: nil)
-
-        UNUserNotificationCenter.current().delegate = notificationDelegate
-        UNUserNotificationCenter.current().add(request)
-    }
-
-    @MainActor
-    private func presentUpdateFailureAlert(_ message: String) {
-        let content = UNMutableNotificationContent()
-        content.title = localized(.updateCheckFailed)
-        content.body = message
-        content.sound = .default
-
-        let request = UNNotificationRequest(identifier: "UpdateFailed", content: content, trigger: nil)
-
-        UNUserNotificationCenter.current().delegate = notificationDelegate
-        UNUserNotificationCenter.current().add(request)
-    }
-
-    @MainActor
-    func openUpdaterConfigFile() {
-        let fm = FileManager.default
-        let baseDirectory = fm.homeDirectoryForCurrentUser
-            .appendingPathComponent("Library")
-            .appendingPathComponent("Application Support")
-            .appendingPathComponent("Launchory")
-            .appendingPathComponent("updates", isDirectory: true)
-        let configURL = baseDirectory.appendingPathComponent("config.json", isDirectory: false)
-        let supportedLanguages = ["de", "en", "es", "fr", "it", "hi", "ja", "ko", "ru", "vi", "zh"]
-        let defaultConfig: [String: Any] = [
-            "language": "en",
-            "supported_languages": supportedLanguages
-        ]
-
-        do {
-            if !fm.fileExists(atPath: baseDirectory.path) {
-                try fm.createDirectory(at: baseDirectory, withIntermediateDirectories: true)
-            }
-            if !fm.fileExists(atPath: configURL.path) {
-                let data = try JSONSerialization.data(withJSONObject: defaultConfig, options: [.prettyPrinted, .sortedKeys])
-                try data.write(to: configURL)
-            } else {
-                let attributes = try fm.attributesOfItem(atPath: configURL.path)
-                let size = (attributes[.size] as? NSNumber)?.intValue ?? 0
-                if size == 0 {
-                    let data = try JSONSerialization.data(withJSONObject: defaultConfig, options: [.prettyPrinted, .sortedKeys])
-                    try data.write(to: configURL)
-                }
-            }
-            NSWorkspace.shared.open(configURL)
-        } catch {
-            presentUpdateFailureAlert(error.localizedDescription)
-        }
-    }
-
-#if !APP_STORE
-    @MainActor
-    func launchUpdater(for release: UpdateRelease) {
-        let alert = NSAlert()
-        alert.messageText = localized(.updaterConfirmTitle)
-        alert.informativeText = localized(.updaterConfirmMessage)
-        alert.alertStyle = .informational
-        alert.addButton(withTitle: localized(.downloadUpdate))
-        alert.addButton(withTitle: localized(.cancel))
-
-        
-        guard alert.runModal() == .alertFirstButtonReturn else { return }
-
-        do {
-            try startUpdaterProcess(tag: release.version)
-            DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
-                AppDelegate.shared?.quitWithFade()
-            }
-        } catch {
-            presentUpdaterLaunchFailure(error)
-        }
-    }
-
-    private func startUpdaterProcess(tag: String) throws {
-        guard let updaterURL = Bundle.main.url(
-            forResource: "SwiftUpdater",
-            withExtension: nil,
-            subdirectory: "Updater"
-        ) else {
-            throw UpdaterLaunchError.missingBinary
-        }
-
-        guard FileManager.default.isExecutableFile(atPath: updaterURL.path) else {
-            throw UpdaterLaunchError.notExecutable
-        }
-
-        let process = Process()
-        process.executableURL = URL(fileURLWithPath: "/usr/bin/open")
-
-        let assetPattern = "Launchory.*\\.zip"
-        let bundlePath = Bundle.main.bundlePath
-
-        var arguments: [String] = ["-na", "Terminal", "--args", updaterURL.path]
-
-        if !tag.isEmpty {
-            arguments.append(contentsOf: ["--tag", tag])
-        }
-
-        arguments.append(contentsOf: [
-            "--asset-pattern", assetPattern,
-            "--install-dir", bundlePath,
-            "--hold-window"
-        ])
-
-        process.arguments = arguments
-
-        do {
-            try process.run()
-        } catch {
-            throw UpdaterLaunchError.spawnFailed(error)
-        }
-    }
-
-    @MainActor
-    private func presentUpdaterLaunchFailure(_ error: Error) {
-        let alert = NSAlert()
-        alert.messageText = localized(.updateCheckFailed)
-        alert.alertStyle = .warning
-
-        let detail: String
-        if let launchError = error as? UpdaterLaunchError {
-            switch launchError {
-            case .missingBinary:
-                detail = localized(.updaterMissingBinary)
-            case .notExecutable:
-                detail = localized(.updaterNotExecutable)
-            case .spawnFailed(let underlying):
-                detail = underlying.localizedDescription
-            }
-        } else {
-            detail = error.localizedDescription
-        }
-
-        alert.informativeText = String(format: localized(.updaterLaunchFailed), detail)
-        alert.addButton(withTitle: localized(.okButton))
-        alert.runModal()
-    }
-
-    enum UpdaterLaunchError: Error {
-        case missingBinary
-        case notExecutable
-        case spawnFailed(Error)
-    }
-
     func openReleaseURL(_ url: URL) {
         NSWorkspace.shared.open(url)
-    }
-#else
-    func openReleaseURL(_ url: URL) {
-        NSWorkspace.shared.open(url)
-    }
-#endif
-}
-
-private final class UpdateNotificationDelegate: NSObject, UNUserNotificationCenterDelegate {
-    private let openHandler: (URL) -> Void
-    private let downloadButtonTitle: String
-
-    init(downloadButtonTitle: String, openHandler: @escaping (URL) -> Void) {
-        self.downloadButtonTitle = downloadButtonTitle
-        self.openHandler = openHandler
-        super.init()
-        setupCategories()
-    }
-
-    private func setupCategories() {
-        let downloadAction = UNNotificationAction(identifier: "DOWNLOAD_ACTION",
-                                                title: downloadButtonTitle,
-                                                options: [.foreground])
-        let category = UNNotificationCategory(identifier: "UPDATE_CATEGORY",
-                                            actions: [downloadAction],
-                                            intentIdentifiers: [],
-                                            options: [])
-        UNUserNotificationCenter.current().setNotificationCategories([category])
-    }
-
-    func userNotificationCenter(_ center: UNUserNotificationCenter, willPresent notification: UNNotification, withCompletionHandler completionHandler: @escaping (UNNotificationPresentationOptions) -> Void) {
-        completionHandler([.banner, .sound])
-    }
-
-    func userNotificationCenter(_ center: UNUserNotificationCenter, didReceive response: UNNotificationResponse, withCompletionHandler completionHandler: @escaping () -> Void) {
-        if response.actionIdentifier == "DOWNLOAD_ACTION" || response.actionIdentifier == UNNotificationDefaultActionIdentifier {
-             if let urlString = response.notification.request.content.userInfo["releaseURL"] as? String,
-               let url = URL(string: urlString) {
-                openHandler(url)
-            }
-        }
-        completionHandler()
     }
 }
 

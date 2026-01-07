@@ -17,9 +17,6 @@ enum AppStoreEnvironment {
         #if DEBUG
         return .standalone
         #else
-        if Bundle.main.appStoreReceiptURL?.lastPathComponent == "sandboxReceipt" {
-            return .appStore
-        }
         return Bundle.main.path(forResource: "embedded", ofType: "provisionprofile") == nil ? .appStore : .standalone
         #endif
     }
@@ -89,6 +86,7 @@ final class AppStore: ObservableObject {
     // UpdateState 和 UpdateRelease 已移除 - 自定义更新器功能已移除以符合 App Store 审核指南
 
     enum BackgroundStyle: String, CaseIterable, Identifiable {
+        case solid
         case blur
         case glass
 
@@ -96,6 +94,7 @@ final class AppStore: ObservableObject {
 
         var localizationKey: LocalizationKey {
             switch self {
+            case .solid: return .backgroundStyleOptionSolid
             case .blur: return .backgroundStyleOptionBlur
             case .glass: return .backgroundStyleOptionGlass
             }
@@ -188,7 +187,7 @@ final class AppStore: ObservableObject {
            let style = BackgroundStyle(rawValue: raw) {
             return style
         }
-        return .glass
+        return .solid
     }
 
     private static let minColumnsPerPage = 4
@@ -1351,12 +1350,12 @@ final class AppStore: ObservableObject {
         }
         scrollSensitivity = initialScrollSensitivity
 
-        let storedColumns = defaults.object(forKey: Self.gridColumnsKey) as? Int ?? 7
+        let storedColumns = defaults.object(forKey: Self.gridColumnsKey) as? Int ?? 6
         let clampedColumns = Self.clampColumns(storedColumns)
         self.gridColumnsPerPage = clampedColumns
         defaults.set(clampedColumns, forKey: Self.gridColumnsKey)
 
-        let storedRows = defaults.object(forKey: Self.gridRowsKey) as? Int ?? 5
+        let storedRows = defaults.object(forKey: Self.gridRowsKey) as? Int ?? 4
         let clampedRows = Self.clampRows(storedRows)
         self.gridRowsPerPage = clampedRows
         defaults.set(clampedRows, forKey: Self.gridRowsKey)

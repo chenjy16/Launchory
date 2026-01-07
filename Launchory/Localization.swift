@@ -153,6 +153,7 @@ enum LocalizationKey: String {
     case settingsSectionUpdates
     case backgroundStyleTitle
     case backgroundStyleOptionBlur
+    case backgroundStyleOptionSolid
     case backgroundStyleOptionGlass
     case backupPlaceholderTitle
     case backupPlaceholderSubtitle
@@ -2135,6 +2136,7 @@ final class LocalizationManager {
             .voiceAnnouncementFolderFormat: "Folder: %@",
             .backgroundStyleTitle: "Background style",
             .backgroundStyleOptionBlur: "Blur",
+            .backgroundStyleOptionSolid: "Solid",
             .backgroundStyleOptionGlass: "Liquid glass",
             .hiddenAppsAddButton: "Hide application",
             .hiddenAppsEmptyTitle: "No hidden apps yet",
@@ -2246,6 +2248,7 @@ final class LocalizationManager {
             .voiceAnnouncementFolderFormat: "文件夹：%@",
             .backgroundStyleTitle: "背景样式",
             .backgroundStyleOptionBlur: "高斯模糊",
+            .backgroundStyleOptionSolid: "纯色",
             .backgroundStyleOptionGlass: "液态玻璃",
             .hiddenAppsAddButton: "隐藏应用",
             .hiddenAppsEmptyTitle: "尚未隐藏任何应用",

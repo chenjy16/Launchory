@@ -38,6 +38,8 @@ private extension View {
                                   cornerRadius: CGFloat) -> some View {
         let shape = RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
         switch style {
+        case .solid:
+            self.background(Color(nsColor: .windowBackgroundColor), in: shape)
         case .glass:
             self.liquidGlass(in: shape)
         case .blur:

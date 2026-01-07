@@ -75,6 +75,9 @@ struct SettingsView: View {
 
     var body: some View {
         ZStack(alignment: .topTrailing) {
+            Color(nsColor: .windowBackgroundColor)
+                .ignoresSafeArea()
+
             NavigationSplitView {
                 List(selection: $selectedSection) {
                     HStack(alignment: .center, spacing: 2) {
